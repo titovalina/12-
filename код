@@ -1,1 +1,85 @@
+class BallLine:  # Класс для представления линии шариков и выполнения операций уничтожения цепочек
+    def __init__(self, balls):  # Инициализирует линию шариков
+        self.balls = balls  # Сохраняем список цветов шариков
 
+    def find_chains(self):  # Находит все непрерывные цепочки из трех и более шариков одного цвета
+        chains = []  # Список для хранения цепочек шариков
+        start = 0  # Начальный индекс для поиска цепочек
+        while start < len(self.balls):
+            end = start + 1  # Индекс для поиска конца цепочки
+            while end < len(self.balls) and self.balls[end] == self.balls[start]:  # Пока не дошли до конца и цвет шарика совпадает с началом цепочки - увеличиваем индекс конца цепочки
+                end += 1
+            if end - start >= 3:  # Если длина цепочки >= 3, добавляем цепочку в список
+                chains.append((start, end))
+            start = end  # Переходим к следующему шарику для поиска новой цепочки
+        return chains
+
+    def remove_chains(self, chains):  # Удаляет заданные цепочки шариков из линии
+        deleted_count = 0  # Счётчик удалённых шариков
+        for start, end in reversed(chains):  # Удаляем цепочки с конца списка, чтобы не сдвигать индексы
+            del self.balls[start:end]
+            deleted_count += (end - start)
+        return deleted_count
+
+    def process_line(self):  # Обрабатывает линию шариков, удаляя цепочки до тех пор, пока они есть
+        total_deleted = 0  # Инициализируем общее количество удаленных шариков
+        while True:  # Пока в линии есть цепочки для удаления - ищем цепочки
+            chains = self.find_chains()
+            if not chains:
+                break
+            deleted_count = self.remove_chains(chains)  # Удаляем найденные цепочки и получаем количество удаленных шариков
+            total_deleted += deleted_count
+        return total_deleted
+
+    def get_balls(self):  # Возвращает текущее состояние линии шариков
+        return self.balls
+
+
+def get_ball_colors_from_user():  # Запрашивает у пользователя строку с числами, разделенными пробелами
+    while True:
+        try:
+            input_str = input("Введите количество шариков и их цвета (разделенные пробелами): ")
+            numbers = [int(x) for x in input_str.split()]  # Преобразуем строку в список чисел
+
+            if not numbers:  # Если список пуст
+                print("Ошибка: необходимо ввести хотя бы одно число.")
+                continue
+
+            num_balls = numbers[0]  # Первое число - количество шариков
+            colors = numbers[1:]  # Остальные числа - цвета шариков
+
+            if not (1 <= num_balls <= 10**5):  # Проверяем количество шариков
+                print("Ошибка: количество шариков должно быть в диапазоне от 1 до 10^5.")
+                continue
+
+            if len(colors) != num_balls:  # Проверяем, что количество цветов совпадает с заявленным количеством шариков
+                print("Ошибка: количество введенных цветов не соответствует заявленному количеству шариков.")
+                continue
+
+            if not all(0 <= color <= 9 for color in colors):  # Проверяем, что цвета находятся в диапазоне от 0 до 9
+                print("Ошибка: цвета шариков должны быть в диапазоне от 0 до 9.")
+                continue
+
+            return colors  # Если все проверки пройдены, возвращаем список цветов
+
+        except ValueError:  # Если введены не числа
+            print("Ошибка: введите целые числа.")
+
+
+def main():  # Основная функция для взаимодействия с пользователем
+    print("Игра 'Шарики'")
+
+    try:
+        ball_colors = get_ball_colors_from_user()  # Получаем список цветов шариков от пользователя
+
+        line = BallLine(ball_colors)  # Создаем объект линии шариков
+        deleted_count = line.process_line()  # Обрабатываем линию, удаляя цепочки
+
+        print("Количество уничтоженных шариков:", deleted_count)
+
+    except Exception as e:  # Перехватываем любые другие ошибки, которые могли произойти
+        print(f"Произошла ошибка: {e}")
+
+
+if __name__ == "__main__":
+    main()
